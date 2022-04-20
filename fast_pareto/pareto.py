@@ -23,10 +23,21 @@ def _change_directions(
             smaller is better.
             The shape is (n_observations, n_objectives).
     """
+    (_, n_objectives) = costs.shape
     _costs = costs.copy()
-    if larger_is_better_objectives is not None:
-        _costs[:, larger_is_better_objectives] *= -1
+    if larger_is_better_objectives is None:
+        return _costs
 
+    if (
+        max(larger_is_better_objectives) >= n_objectives
+        or min(larger_is_better_objectives) < 0
+    ):
+        raise ValueError(
+            "The indices specified in larger_is_better_objectives must be in "
+            f"[0, n_objectives(={n_objectives})), but got {larger_is_better_objectives}"
+        )
+
+    _costs[:, larger_is_better_objectives] *= -1
     return _costs
 
 
