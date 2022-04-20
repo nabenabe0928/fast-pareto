@@ -1,4 +1,4 @@
-from fast_pareto.pareto import is_pareto_front, nondominated_sort
+from fast_pareto.pareto import is_pareto_front, nondominated_rank
 
 
-__all__ = ["nondominated_sort", "is_pareto_front"]
+__all__ = ["nondominated_rank", "is_pareto_front"]

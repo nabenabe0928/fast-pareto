@@ -77,7 +77,7 @@ def is_pareto_front(
     return mask
 
 
-def nondominated_sort(
+def nondominated_rank(
     costs: np.ndarray, larger_is_better_objectives: Optional[List[int]] = None
 ) -> np.ndarray:
     """
