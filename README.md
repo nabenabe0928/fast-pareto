@@ -1,4 +1,4 @@
-# Fast non-dominated search library
+# Fast non-dominated sort library
 
 [![Build Status](https://github.com/nabenabe0928/fast_pareto/workflows/Functionality%20test/badge.svg?branch=main)](https://github.com/nabenabe0928/fast_pareto)
 [![codecov](https://codecov.io/gh/nabenabe0928/fast_pareto/branch/main/graph/badge.svg?token=ZBJJ77IHI4)](https://codecov.io/gh/nabenabe0928/fast_pareto)
@@ -49,6 +49,14 @@ If `None` is provided, we consider all objectives should be minimized.
 This function returns the non-dominated rank with the shape of `(n_observations, )`.
 The non-dominated rank is better when it is smaller.
 For this implementation, we return zero when those observations are on the pareto front.
+
+You can see the examples of [the results obtained by this module](example/example_visualizations.ipynb) below.
+<table>
+    <tr>
+        <td><img src="figs/nd-rank-gauss.png" alt=""></td>
+        <td><img src="figs/nd-rank-inv.png" alt=""></td>
+    </tr>
+</table>
 
 ## Benchmarking
 ### Test code
