@@ -1,8 +1,1 @@
-# For package
-
-# For local check
-pytest-cov
-pytest
-flake8
-black
-mypy
+numpy
