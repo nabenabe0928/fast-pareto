@@ -7,14 +7,27 @@ Note that all objective
 ## Setup
 
 ```shell
-$ pip install fast_pareto
+$ pip install fast-pareto
 ```
 
 ## Examples
 
 ```python
+from fast_pareto import is_pareto_front, nondominated_sort
+import numpy as np
 
->>> []
+
+is_pareto_front(np.array([[0, 1], [1, 0], [1, 1]]))
+>>> array([True, True, False])
+
+is_pareto_front(np.array([[0, -1], [1, 0], [1, -1]]), larger_is_better_objectives=[1])
+>>> array([True, True, False])
+
+nondominated_sort(np.array([[2], [1], [0]]))
+>>> array([2, 1, 0], dtype=int32)
+
+nondominated_sort(np.array([[2], [1], [0]]), larger_is_better_objectives=[0])
+>>> array([0, 1, 2], dtype=int32)
 ```
 
 ## is_pareto_front

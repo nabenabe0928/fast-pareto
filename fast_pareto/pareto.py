@@ -86,7 +86,7 @@ def nondominated_sort(
             The shape is (n_observations, ).
             The rank starts from zero and lower rank is better.
     """
-    costs = _change_directions(costs)
+    costs = _change_directions(costs, larger_is_better_objectives)
     ranks = np.zeros(len(costs), dtype=np.int32)
     rank = 0
     indices = np.arange(len(costs))
