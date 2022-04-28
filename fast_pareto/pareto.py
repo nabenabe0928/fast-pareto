@@ -112,21 +112,22 @@ def _tie_break(costs: np.ndarray, nd_ranks: np.ndarray) -> np.ndarray:
     """
     rank_lb = 0  # the non-domination rank starts from zero
     rank_ub = nd_ranks.max() + 1
-    masks = [[] for _ in range(rank_lb, rank_ub)]
+    masks: List[List[int]] = [[] for _ in range(rank_lb, rank_ub)]
     for idx, nd_rank in enumerate(nd_ranks):
         masks[nd_rank].append(idx)
 
-    n_checked = -1  # -1 to start tie_broken_nd_ranks from zero
+    n_checked = 0
     ranks = scipy.stats.rankdata(costs, axis=0)
     # min_ranks_factor plays a role when we tie-break same average ranks
-    min_ranks_factor = np.min(ranks, axis=-1) / (nd_ranks.size ** 2 + 1)
+    min_ranks_factor = np.min(ranks, axis=-1) / (nd_ranks.size**2 + 1)
     avg_ranks = np.mean(ranks, axis=-1) + min_ranks_factor
     tie_broken_nd_ranks = np.zeros_like(nd_ranks, dtype=np.int32)
 
     for nd_rank in range(rank_lb, rank_ub):
         mask = masks[nd_rank]
         tie_break_ranks = scipy.stats.rankdata(avg_ranks[mask]).astype(np.int32)
-        tie_broken_nd_ranks[mask] = tie_break_ranks + n_checked
+        # -1 to start tie_broken_nd_ranks from zero
+        tie_broken_nd_ranks[mask] = tie_break_ranks + n_checked - 1
         n_checked += len(mask)
 
     return tie_broken_nd_ranks
