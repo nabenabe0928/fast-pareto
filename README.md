@@ -58,6 +58,16 @@ You can see the examples of [the results obtained by this module](example/exampl
     </tr>
 </table>
 
+Note that we added the tie-breaking feature using average ranks in v0.0.5
+and when you specify `tie_break=True`, this function returns the ranks of each observation
+with tie-breaking.
+For example, when we have non-domination ranks of `[0, 0, 1, 1]` with `tie_break=False`,
+then `tie_break=True` tries to differentiate those values to be such as `[1, 0, 2, 3]`.
+When using this feature, we will not get non-domination ranks anymore,
+but if the rank for the i-th observation `r[i]` and that for the j-th observation `r[j]`
+have the relationship of `r[i] < r[j]`, it is guaranteed that the non-domination rank
+of the i-th observation is lower or equal to that of the j-th observation.
+
 ## Benchmarking
 ### Test code
 
