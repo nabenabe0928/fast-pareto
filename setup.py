@@ -9,12 +9,12 @@ with open("requirements.txt", "r") as f:
 
 setuptools.setup(
     name="fast_pareto",
-    version="0.0.5",
+    version="0.0.6",
     author="nabenabe0928",
     author_email="shuhei.watanabe.utokyo@gmail.com",
     url="https://github.com/nabenabe0928/fast_pareto",
     packages=setuptools.find_packages(),
-    python_requires=">=3.8",
+    python_requires=">=3.7",
     platforms=["Linux"],
     install_requires=requirements,
     include_package_data=True,
