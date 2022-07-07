@@ -16,7 +16,7 @@ def _change_directions(
         costs (np.ndarray):
             An array of costs (or objectives).
             The shape is (n_observations, n_objectives).
-        larger_is_better_objectives (List[int]):
+        larger_is_better_objectives (Optional[List[int]]):
             The indices of the objectives that are better when the values are larger.
             If None, we consider all objectives are better when they are smaller.
 
@@ -54,7 +54,7 @@ def is_pareto_front(
         costs (np.ndarray):
             An array of costs (or objectives).
             The shape is (n_observations, n_objectives).
-        larger_is_better_objectives (List[int]):
+        larger_is_better_objectives (Optional[List[int]]):
             The indices of the objectives that are better when the values are larger.
             If None, we consider all objectives are better when they are smaller.
 
@@ -145,7 +145,7 @@ def nondominated_rank(
         costs (np.ndarray):
             An array of costs (or objectives).
             The shape is (n_observations, n_objectives).
-        larger_is_better_objectives (List[int]):
+        larger_is_better_objectives (Optional[List[int]]):
             The indices of the objectives that are better when the values are larger.
             If None, we consider all objectives are better when they are smaller.
         tie_break (bool):
