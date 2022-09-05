@@ -66,6 +66,14 @@ def test_pareto_front() -> None:
         )
 
 
+def test_with_same_values() -> None:
+    costs = np.array([[1, 1], [1, 1], [1, 2], [2, 1], [0, 1.5], [1.5, 0], [0, 1.5]])
+    pf = is_pareto_front(costs=costs)
+    assert np.allclose(pf, np.array([True, True, False, False, True, True, True]))
+    pf = nondominated_rank(costs, tie_break=False)
+    assert np.allclose(pf, np.array([0, 0, 1, 1, 0, 0, 0]))
+
+
 def test_no_change_in_costs_pareto_front() -> None:
     costs = np.random.normal(size=(100, 3))
     ans = costs.copy()

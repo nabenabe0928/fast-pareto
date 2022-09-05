@@ -62,10 +62,25 @@ def is_pareto_front(
         mask (np.ndarray):
             The mask of the pareto front.
             Each element is True or False and the shape is (n_observations, ).
+
+    NOTE:
+        f dominates g if and only if:
+            1. f[i] <= g[i] for all i, and
+            2. f[i] < g[i] for some i
+        ==> g is not dominated by f if and only if:
+            1. f[i] > g[i] for some i, or
+            2. f[i] == g[i] for all i
+
+        If we filter all observations by only the condition 1,
+        we might miss the observations that satisfy the condition 2.
+        However, we already know that those observations do not satisfy the condition 1.
+        It implies that the summation of all costs cannot be larger than those of pareto solutions.
+        We use this fact to speedup.
     """
-    costs = _change_directions(costs, larger_is_better_objectives)
-    on_front_indices = np.arange(costs.shape[0])
     (n_observations, _) = costs.shape
+    total_costs = np.sum(costs, axis=-1)  # shape = (n_observations, )
+    costs = _change_directions(costs, larger_is_better_objectives)
+    on_front_indices = np.arange(n_observations)
     next_index = 0
 
     while next_index < len(costs):
@@ -77,6 +92,10 @@ def is_pareto_front(
 
     mask = np.zeros(n_observations, dtype=np.bool8)
     mask[on_front_indices] = True
+    missed_pareto_idx = np.arange(n_observations)[~mask][
+        np.any(total_costs[mask][:, np.newaxis] == total_costs[~mask], axis=0)
+    ]
+    mask[missed_pareto_idx] = True
     return mask
 
 
