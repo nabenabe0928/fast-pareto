@@ -45,7 +45,9 @@ def _change_directions(
 
 
 def is_pareto_front(
-    costs: np.ndarray, larger_is_better_objectives: Optional[List[int]] = None
+    costs: np.ndarray,
+    larger_is_better_objectives: Optional[List[int]] = None,
+    filter_duplication: bool = False,
 ) -> np.ndarray:
     """
     Determine the pareto front from a provided set of costs.
@@ -57,6 +59,9 @@ def is_pareto_front(
         larger_is_better_objectives (Optional[List[int]]):
             The indices of the objectives that are better when the values are larger.
             If None, we consider all objectives are better when they are smaller.
+        filter_duplication (bool):
+            If True, duplications will be False from the second occurence.
+            True actually speeds up the runtime.
 
     Returns:
         mask (np.ndarray):
@@ -92,10 +97,13 @@ def is_pareto_front(
 
     mask = np.zeros(n_observations, dtype=np.bool8)
     mask[on_front_indices] = True
-    missed_pareto_idx = np.arange(n_observations)[~mask][
-        np.any(total_costs[mask][:, np.newaxis] == total_costs[~mask], axis=0)
-    ]
-    mask[missed_pareto_idx] = True
+
+    if not filter_duplication:
+        missed_pareto_idx = np.arange(n_observations)[~mask][
+            np.any(total_costs[mask][:, np.newaxis] == total_costs[~mask], axis=0)
+        ]
+        mask[missed_pareto_idx] = True
+
     return mask
 
 
@@ -156,6 +164,7 @@ def nondominated_rank(
     costs: np.ndarray,
     larger_is_better_objectives: Optional[List[int]] = None,
     tie_break: bool = False,
+    filter_duplication: bool = True,
 ) -> np.ndarray:
     """
     Calculate the non-dominated rank of each observation.
@@ -169,6 +178,9 @@ def nondominated_rank(
             If None, we consider all objectives are better when they are smaller.
         tie_break (bool):
             Whether we apply tie-break or not.
+        filter_duplication (bool):
+            If True, duplications will be less prioritized in the sorting from the second occurence.
+            True actually speeds up the runtime.
 
     Returns:
         ranks (np.ndarray):
@@ -187,7 +199,7 @@ def nondominated_rank(
     rank = 0
     indices = np.arange(len(costs))
     while indices.size > 0:
-        on_front = is_pareto_front(costs)
+        on_front = is_pareto_front(costs, filter_duplication=filter_duplication)
         ranks[indices[on_front]] = rank
         # Remove pareto front points
         indices, costs = indices[~on_front], costs[~on_front]

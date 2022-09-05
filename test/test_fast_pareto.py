@@ -68,10 +68,20 @@ def test_pareto_front() -> None:
 
 def test_with_same_values() -> None:
     costs = np.array([[1, 1], [1, 1], [1, 2], [2, 1], [0, 1.5], [1.5, 0], [0, 1.5]])
-    pf = is_pareto_front(costs=costs)
+    pf = is_pareto_front(costs=costs, filter_duplication=False)
     assert np.allclose(pf, np.array([True, True, False, False, True, True, True]))
-    pf = nondominated_rank(costs, tie_break=False)
+    pf = is_pareto_front(costs=costs, filter_duplication=True)
+    assert np.allclose(pf, np.array([True, False, False, False, True, True, False]))
+    pf = nondominated_rank(costs, tie_break=False, filter_duplication=False)
     assert np.allclose(pf, np.array([0, 0, 1, 1, 0, 0, 0]))
+    pf = nondominated_rank(costs, tie_break=False, filter_duplication=True)
+    assert np.allclose(pf, np.array([0, 1, 2, 2, 0, 0, 1]))
+
+    costs = np.array([[1, 1], [1, 1], [1, 2], [2, 1], [1, 1], [0, 1.5], [0, 1.5]])
+    pf = nondominated_rank(costs, tie_break=False, filter_duplication=False)
+    assert np.allclose(pf, np.array([0, 0, 1, 1, 0, 0, 0]))
+    pf = nondominated_rank(costs, tie_break=False, filter_duplication=True)
+    assert np.allclose(pf, np.array([0, 1, 3, 3, 2, 0, 1]))
 
 
 def test_no_change_in_costs_pareto_front() -> None:

@@ -9,7 +9,7 @@ with open("requirements.txt", "r") as f:
 
 setuptools.setup(
     name="fast_pareto",
-    version="0.1.0",
+    version="0.1.1",
     author="nabenabe0928",
     author_email="shuhei.watanabe.utokyo@gmail.com",
     url="https://github.com/nabenabe0928/fast_pareto",
