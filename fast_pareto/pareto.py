@@ -40,7 +40,7 @@ def _change_directions(
             f"[0, n_objectives(={n_objectives})), but got {larger_is_better_objectives}"
         )
 
-    _costs[:, larger_is_better_objectives] *= -1
+    _costs[..., larger_is_better_objectives] *= -1
     return _costs
 
 

@@ -1,7 +1,7 @@
 from fast_pareto.pareto import is_pareto_front, nondominated_rank
 
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 __copyright__ = "Copyright (C) 2022 Shuhei Watanabe"
 __licence__ = "Apache-2.0 License"
 __author__ = "Shuhei Watanabe"
