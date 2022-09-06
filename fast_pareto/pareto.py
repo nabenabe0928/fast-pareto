@@ -51,6 +51,9 @@ def is_pareto_front(
 ) -> np.ndarray:
     """
     Determine the pareto front from a provided set of costs.
+    The time complexity is O(N (log N)^(M - 2)) for M > 3
+    and O(N log N) for M = 2, 3 where
+    N is n_observations and M is n_objectives. (Kung's algorithm)
 
     Args:
         costs (np.ndarray):

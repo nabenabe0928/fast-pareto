@@ -5,7 +5,8 @@
 
 This library is solely for non-dominated search and to find Pareto optimal solutions.
 There are only two functions in this library.
-Note that all objective 
+The time complexity of finding the Pareto solutions is $O(N (\log N)^{M - 2})$ for $M > 3$ and $O(N\log N)$ for $M = 2, 3$ where $N$ is `n_observations` and $M$ is `n_objectives`. (Kung's algorithm)
+
 
 ## Setup
 
@@ -143,7 +144,7 @@ Wall time: 15.7 s
 ## Appendix
 
 To supplement the knowledge, I note the definition of non-dominated rank.
-Suppose we would like to minimize the multiobjective function <img src="https://render.githubusercontent.com/render/math?math=f: \mathbb{R}^D \rightarrow \mathbb{R}^M">. <img src="https://render.githubusercontent.com/render/math?math=f(\boldsymbol{x})"> is said to dominate <img src="https://render.githubusercontent.com/render/math?math=f(\boldsymbol{x}^\prime)"> if and only if <img src="https://render.githubusercontent.com/render/math?math=\forall i \in [1, M], f_i(\boldsymbol{x}) \leq f_i(\boldsymbol{x}^\prime)"> and <img src="https://render.githubusercontent.com/render/math?math=\exists i \in [1, M], f_i(\boldsymbol{x}) < f_i(\boldsymbol{x}^\prime)">.
+Suppose we would like to minimize the multiobjective function $f: \mathbb{R}^D \rightarrow \mathbb{R}^M$. $f(\boldsymbol{x})$ is said to dominate $f(\boldsymbol{x}^\prime)$ if and only if $\forall i \in \\{1, \dots, M\\}, f_i(\boldsymbol{x}) \leq f_i(\boldsymbol{x}^\prime)$ and $\exists i \in \\{1, \dots, M\\}, f_i(\boldsymbol{x}) < f_i(\boldsymbol{x}^\prime)$.
 
-When there is no such observation that dominates <img src="https://render.githubusercontent.com/render/math?math=f(\boldsymbol{x})">, <img src="https://render.githubusercontent.com/render/math?math=f(\boldsymbol{x})"> is said to be Pareto optimal and the non-domination rank of <img src="https://render.githubusercontent.com/render/math?math=f(\boldsymbol{x})"> is defined as 1 (but in our code, we define it as zero).
-Furthermore, <img src="https://render.githubusercontent.com/render/math?math=f(\boldsymbol{x}^\prime)"> is said to be the non-domination rank of <img src="https://render.githubusercontent.com/render/math?math=n"> when <img src="https://render.githubusercontent.com/render/math?math=f(\boldsymbol{x}^\prime)"> is the Pareto optimal in a set such that it excludes observations with the non-domination rank of <img src="https://render.githubusercontent.com/render/math?math=n - 1"> or lower.
+When there is no such observation that dominates $f(\boldsymbol{x})$, $f(\boldsymbol{x})$ is said to be Pareto optimal and the non-domination rank of $f(\boldsymbol{x})$ is defined as 1 (but in our code, we define it as zero).
+Furthermore, $f(\boldsymbol{x}^\prime)$ is said to be the non-domination rank of $n$ when $f(\boldsymbol{x}^\prime)$ is the Pareto optimal in a set such that it excludes observations with the non-domination rank of $n - 1$ or lower.
