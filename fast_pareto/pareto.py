@@ -26,7 +26,7 @@ def _change_directions(
             smaller is better.
             The shape is (n_observations, n_objectives).
     """
-    (_, n_objectives) = costs.shape
+    n_objectives = costs.shape[-1]
     _costs = deepcopy(costs)
     if larger_is_better_objectives is None:
         return _costs
