@@ -28,7 +28,7 @@ def _change_directions(
     """
     n_objectives = costs.shape[-1]
     _costs = deepcopy(costs)
-    if larger_is_better_objectives is None:
+    if larger_is_better_objectives is None or len(larger_is_better_objectives) == 0:
         return _costs
 
     if (
