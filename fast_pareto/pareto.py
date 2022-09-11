@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 import numpy as np
 
@@ -110,7 +110,7 @@ def is_pareto_front(
     return mask
 
 
-def _tie_break(costs: np.ndarray, nd_ranks: np.ndarray) -> np.ndarray:
+def _tie_break_by_avg_rank(costs: np.ndarray, nd_ranks: np.ndarray) -> np.ndarray:
     """
     Tie-break the non-domination ranks (, but we cannot guarantee no duplications)
 
@@ -163,10 +163,93 @@ def _tie_break(costs: np.ndarray, nd_ranks: np.ndarray) -> np.ndarray:
     return tie_broken_nd_ranks
 
 
+def _compute_rank_based_crowding_distance(ranks: np.ndarray) -> np.ndarray:
+    (n_observations, n_obj) = ranks.shape
+    order = np.argsort(ranks, axis=0)
+    order_inv = np.zeros_like(order[:, 0], dtype=np.int32)
+    dists = np.zeros(n_observations)
+    for m in range(n_obj):
+        sorted_ranks = ranks[:, m][order[:, m]]
+        order_inv[order[:, m]] = np.arange(n_observations)
+        scale = sorted_ranks[-1] - sorted_ranks[0]
+        crowding_dists = (
+            np.hstack([np.inf, sorted_ranks[2:] - sorted_ranks[:-2], np.inf]) / scale
+        )
+        dists += crowding_dists[order_inv]
+
+    # crowding dist is better when it is larger
+    return scipy.stats.rankdata(-dists).astype(np.int32)
+
+
+def _tie_break_by_crowding_distance(
+    costs: np.ndarray, nd_ranks: np.ndarray
+) -> np.ndarray:
+    """
+    Tie-break the non-domination ranks using the crowding distance in NSGA-II
+
+    Args:
+        costs (np.ndarray):
+            An array of costs (or objectives).
+            This array must be already sorted and must be copied.
+            The shape is (n_observations, n_objectives).
+        nd_ranks (np.ndarray):
+            The non-dominated rank of each observation.
+            The shape is (n_observations, ).
+            The rank starts from zero and lower rank is better.
+
+    Returns:
+        tie_broken_nd_ranks (np.ndarray):
+            The each non-dominated rank will be tie-broken
+            so that we can sort identically (but we may get duplications).
+            The shape is (n_observations, ) and the array is a permutation of zero to n_observations - 1.
+
+    Reference:
+        Paper Title:
+            A fast and elitist multiobjective genetic algorithm: NSGA-II
+        One sentence summary:
+            Consider the proximity to neighbors.
+        Authors:
+            K. Deb et al.
+        URL:
+            http://vision.ucsd.edu/~sagarwal/nsga2.pdf
+    """
+    rank_lb = 0  # the non-domination rank starts from zero
+    rank_ub = nd_ranks.max() + 1
+    masks: List[List[int]] = [[] for _ in range(rank_lb, rank_ub)]
+    for idx, nd_rank in enumerate(nd_ranks):
+        masks[nd_rank].append(idx)
+
+    n_checked = 0
+    ranks = scipy.stats.rankdata(costs, axis=0)
+    tie_broken_nd_ranks = np.zeros_like(nd_ranks, dtype=np.int32)
+    for nd_rank in range(rank_lb, rank_ub):
+        mask = masks[nd_rank]
+        tie_break_ranks = _compute_rank_based_crowding_distance(ranks=ranks[mask])
+        # -1 to start tie_broken_nd_ranks from zero
+        tie_broken_nd_ranks[mask] = tie_break_ranks + n_checked - 1
+        n_checked += len(mask)
+
+    return tie_broken_nd_ranks
+
+
+def _tie_break(
+    costs: np.ndarray,
+    nd_ranks: np.ndarray,
+    tie_break: Literal["crowding_distance", "avg_rank"],
+) -> np.ndarray:
+    methods = ["crowding_distance", "avg_rank"]
+    if tie_break == methods[0]:
+        return _tie_break_by_crowding_distance(costs, nd_ranks)
+    elif tie_break == methods[1]:
+        return _tie_break_by_avg_rank(costs, nd_ranks)
+    else:
+        raise ValueError(f"tie_break method must be in {methods}, but got {tie_break}")
+
+
 def nondominated_rank(
     costs: np.ndarray,
     larger_is_better_objectives: Optional[List[int]] = None,
-    tie_break: bool = False,
+    tie_break: Optional[Literal["crowding_distance", "avg_rank"]] = None,
     filter_duplication: bool = True,
 ) -> np.ndarray:
     """
@@ -208,4 +291,7 @@ def nondominated_rank(
         indices, costs = indices[~on_front], costs[~on_front]
         rank += 1
 
-    return ranks if not tie_break else _tie_break(cached_costs, ranks)
+    if tie_break is None:
+        return ranks
+    else:
+        return _tie_break(cached_costs, ranks, tie_break)
