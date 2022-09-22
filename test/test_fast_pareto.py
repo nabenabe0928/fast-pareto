@@ -10,6 +10,7 @@ from fast_pareto.pareto import (
     _compute_rank_based_crowding_distance,
     _tie_break,
     is_pareto_front,
+    is_pareto_front2d,
     nondominated_rank,
 )
 
@@ -111,12 +112,32 @@ def test_pareto_front() -> None:
         )
 
 
+def test_pareto_front2d() -> None:
+    for _ in range(3):
+        costs = np.random.normal(size=(100, 2))
+        assert np.allclose(is_pareto_front2d(costs), naive_pareto_front(costs))
+
+        costs = np.random.normal(size=(100, 2))
+        new_costs = costs.copy()
+        new_costs[:, 0] *= -1
+        assert np.allclose(
+            is_pareto_front2d(costs, larger_is_better_objectives=[0]),
+            naive_pareto_front(new_costs),
+        )
+
+    with pytest.raises(ValueError):
+        costs = np.random.normal(size=(100, 3))
+        is_pareto_front2d(costs)
+
+
 def test_with_same_values() -> None:
     costs = np.array([[1, 1], [1, 1], [1, 2], [2, 1], [0, 1.5], [1.5, 0], [0, 1.5]])
-    pf = is_pareto_front(costs=costs, filter_duplication=False)
-    assert np.allclose(pf, np.array([True, True, False, False, True, True, True]))
-    pf = is_pareto_front(costs=costs, filter_duplication=True)
-    assert np.allclose(pf, np.array([True, False, False, False, True, True, False]))
+    for f in [is_pareto_front, is_pareto_front2d]:
+        pf = f(costs=costs, filter_duplication=False)  # type: ignore
+        assert np.allclose(pf, np.array([True, True, False, False, True, True, True]))
+        pf = f(costs=costs, filter_duplication=True)  # type: ignore
+        assert np.allclose(pf, np.array([True, False, False, False, True, True, False]))
+
     pf = nondominated_rank(costs, tie_break=None, filter_duplication=False)
     assert np.allclose(pf, np.array([0, 0, 1, 1, 0, 0, 0]))
     pf = nondominated_rank(costs, tie_break=None, filter_duplication=True)

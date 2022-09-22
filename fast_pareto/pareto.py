@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import List, Literal, Optional
+from typing import List, Literal, Optional, Tuple
 
 import numpy as np
 
@@ -42,6 +42,71 @@ def _change_directions(
 
     _costs[..., larger_is_better_objectives] *= -1
     return _costs
+
+
+def _get_ordered_costs_and_order_inv(
+    costs: np.ndarray,
+    ordered: bool,
+) -> Tuple[np.ndarray, np.ndarray]:
+    (n_observations, _) = costs.shape
+    if not ordered:
+        order = np.lexsort([costs[:, 1], costs[:, 0]])
+        order_inv = np.zeros_like(order)
+        order_inv[order] = np.arange(n_observations)
+        ordered_costs = costs[order]
+    else:
+        ordered_costs = costs
+        order_inv = np.arange(n_observations)
+
+    return ordered_costs, order_inv
+
+
+def is_pareto_front2d(
+    costs: np.ndarray,
+    larger_is_better_objectives: Optional[List[int]] = None,
+    filter_duplication: bool = False,
+    ordered: bool = False,
+) -> np.ndarray:
+    """
+    Determine the pareto front from a provided set of 2d costs.
+
+    Args:
+        costs (np.ndarray):
+            An array of costs (or objectives).
+            The shape must be (n_observations, 2).
+        larger_is_better_objectives (Optional[List[int]]):
+            The indices of the objectives that are better when the values are larger.
+            If None, we consider all objectives are better when they are smaller.
+        filter_duplication (bool):
+            If True, duplications will be False from the second occurence.
+            True actually speeds up the runtime.
+        ordered (bool):
+            Whether the costs are already sorted by costs[:, 0].
+
+    Returns:
+        mask (np.ndarray):
+            The mask of the pareto front.
+            Each element is True or False and the shape is (n_observations, ).
+    """
+    (n_observations, n_objectives) = costs.shape
+    if n_objectives != 2:
+        raise ValueError(f"n_objectives must be 2, but got {n_objectives}")
+
+    costs = _change_directions(costs, larger_is_better_objectives)
+    ordered_costs, order_inv = _get_ordered_costs_and_order_inv(costs, ordered=ordered)
+
+    min_costs_y = np.minimum.accumulate(ordered_costs[:, 1])
+    min_mask = min_costs_y == ordered_costs[:, 1]
+    new_min_mask = min_costs_y[1:] < min_costs_y[:-1]
+
+    on_front = np.ones(n_observations, dtype=np.bool8)
+    if filter_duplication:
+        on_front[1:] = min_mask[1:] & new_min_mask
+    else:
+        same_mask = ordered_costs[1:, 0] == ordered_costs[:-1, 0]
+        on_front[1:] = min_mask[1:] & (same_mask | new_min_mask)
+
+    return on_front[order_inv]
 
 
 def is_pareto_front(
@@ -211,6 +276,39 @@ def _tie_break(
         raise ValueError(f"tie_break method must be in {methods}, but got {tie_break}")
 
 
+def _compute_nondominated_rank_by_sorted_costs(
+    costs: np.ndarray,
+    filter_duplication: bool,
+) -> np.ndarray:
+    (n_observations, n_obj) = costs.shape
+
+    if n_obj == 1:
+        return scipy.stats.rankdata(costs[:, 0], method="dense") - 1
+
+    ranks = np.zeros(n_observations, dtype=np.int32)
+    rank = 0
+    indices = np.arange(n_observations)
+    ordered_costs, order_inv = _get_ordered_costs_and_order_inv(
+        costs=costs, ordered=False
+    )
+    while indices.size > 0:
+        if n_obj == 2:
+            on_front = is_pareto_front2d(
+                ordered_costs, filter_duplication=filter_duplication, ordered=True
+            )
+        else:
+            on_front = is_pareto_front(
+                ordered_costs, filter_duplication=filter_duplication
+            )
+
+        ranks[indices[on_front]] = rank
+        # Remove pareto front points
+        indices, ordered_costs = indices[~on_front], ordered_costs[~on_front]
+        rank += 1
+
+    return ranks[order_inv]
+
+
 def nondominated_rank(
     costs: np.ndarray,
     larger_is_better_objectives: Optional[List[int]] = None,
@@ -244,17 +342,13 @@ def nondominated_rank(
                 so that we can sort identically.
                 The shape is (n_observations, ) and the array is a permutation of zero to n_observations - 1.
     """
+    (_, n_obj) = costs.shape
     costs = _change_directions(costs, larger_is_better_objectives)
+
     cached_costs = deepcopy(costs)
-    ranks = np.zeros(len(costs), dtype=np.int32)
-    rank = 0
-    indices = np.arange(len(costs))
-    while indices.size > 0:
-        on_front = is_pareto_front(costs, filter_duplication=filter_duplication)
-        ranks[indices[on_front]] = rank
-        # Remove pareto front points
-        indices, costs = indices[~on_front], costs[~on_front]
-        rank += 1
+    ranks = _compute_nondominated_rank_by_sorted_costs(
+        costs=costs, filter_duplication=filter_duplication
+    )
 
     if tie_break is None:
         return ranks
