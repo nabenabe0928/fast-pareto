@@ -1,7 +1,7 @@
 # Fast non-dominated sort library
 
-[![Build Status](https://github.com/nabenabe0928/fast_pareto/workflows/Functionality%20test/badge.svg?branch=main)](https://github.com/nabenabe0928/fast_pareto)
-[![codecov](https://codecov.io/gh/nabenabe0928/fast_pareto/branch/main/graph/badge.svg?token=ZBJJ77IHI4)](https://codecov.io/gh/nabenabe0928/fast_pareto)
+[![Build Status](https://github.com/nabenabe0928/fast-pareto/workflows/Functionality%20test/badge.svg?branch=main)](https://github.com/nabenabe0928/fast-pareto)
+[![codecov](https://codecov.io/gh/nabenabe0928/fast-pareto/branch/main/graph/badge.svg?token=ZBJJ77IHI4)](https://codecov.io/gh/nabenabe0928/fast-pareto)
 
 This library is solely for non-dominated search and to find Pareto optimal solutions.
 There are only two functions (**is_pareto_front** and **nondominated_rank**) in this library and we describe the usage below.
