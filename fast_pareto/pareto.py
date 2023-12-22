@@ -149,13 +149,10 @@ def is_pareto_front(
 
         If we filter all observations by only the condition 1,
         we might miss the observations that satisfy the condition 2.
-        However, we already know that those observations do not satisfy the condition 1.
-        It implies that the summation of all costs cannot be larger than those of pareto solutions.
-        We use this fact to speedup.
     """
     (n_observations, _) = costs.shape
+    original_costs = costs.copy()
     costs = _change_directions(costs, larger_is_better_objectives)
-    total_costs = np.sum(costs, axis=-1)  # shape = (n_observations, )
     on_front_indices = np.arange(n_observations)
     next_index = 0
 
@@ -171,7 +168,13 @@ def is_pareto_front(
 
     if not filter_duplication:
         missed_pareto_idx = np.arange(n_observations)[~mask][
-            np.any(total_costs[mask][:, np.newaxis] == total_costs[~mask], axis=0)
+            np.any(
+                np.all(
+                    original_costs[mask][:, np.newaxis] == original_costs[~mask],
+                    axis=-1,
+                ),
+                axis=0,
+            )
         ]
         mask[missed_pareto_idx] = True
 
