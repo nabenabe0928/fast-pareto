@@ -151,13 +151,15 @@ def is_pareto_front(
         we might miss the observations that satisfy the condition 2.
     """
     (n_observations, _) = costs.shape
-    original_costs = costs.copy()
     costs = _change_directions(costs, larger_is_better_objectives)
     on_front_indices = np.arange(n_observations)
     next_index = 0
 
     while next_index < len(costs):
         nd_mask = np.any(costs < costs[next_index], axis=1)
+        if not filter_duplication:
+            nd_mask[~nd_mask] |= np.all(costs[~nd_mask] == costs[next_index], axis=1)
+
         nd_mask[next_index] = True
         # Remove dominated points
         on_front_indices, costs = on_front_indices[nd_mask], costs[nd_mask]
@@ -165,19 +167,6 @@ def is_pareto_front(
 
     mask = np.zeros(n_observations, dtype=np.bool8)
     mask[on_front_indices] = True
-
-    if not filter_duplication:
-        missed_pareto_idx = np.arange(n_observations)[~mask][
-            np.any(
-                np.all(
-                    original_costs[mask][:, np.newaxis] == original_costs[~mask],
-                    axis=-1,
-                ),
-                axis=0,
-            )
-        ]
-        mask[missed_pareto_idx] = True
-
     return mask
 
 
