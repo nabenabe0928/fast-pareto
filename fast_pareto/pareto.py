@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from copy import deepcopy
-from typing import List, Literal, Optional, Tuple
+from typing import Literal
 
 import numpy as np
 
@@ -7,7 +9,8 @@ import scipy.stats
 
 
 def _change_directions(
-    costs: np.ndarray, larger_is_better_objectives: Optional[List[int]] = None,
+    costs: np.ndarray,
+    larger_is_better_objectives: list[int] | None = None,
 ) -> np.ndarray:
     """
     Determine the pareto front from a provided set of costs.
@@ -16,7 +19,7 @@ def _change_directions(
         costs (np.ndarray):
             An array of costs (or objectives).
             The shape is (n_observations, n_objectives).
-        larger_is_better_objectives (Optional[List[int]]):
+        larger_is_better_objectives (list[int] | None):
             The indices of the objectives that are better when the values are larger.
             If None, we consider all objectives are better when they are smaller.
 
@@ -47,7 +50,7 @@ def _change_directions(
 def _get_ordered_costs_and_order_inv(
     costs: np.ndarray,
     ordered: bool,
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> tuple[np.ndarray, np.ndarray]:
     (n_observations, _) = costs.shape
     if not ordered:
         order = np.lexsort([costs[:, 1], costs[:, 0]])
@@ -63,7 +66,7 @@ def _get_ordered_costs_and_order_inv(
 
 def is_pareto_front2d(
     costs: np.ndarray,
-    larger_is_better_objectives: Optional[List[int]] = None,
+    larger_is_better_objectives: list[int] | None = None,
     filter_duplication: bool = False,
     ordered: bool = False,
 ) -> np.ndarray:
@@ -74,7 +77,7 @@ def is_pareto_front2d(
         costs (np.ndarray):
             An array of costs (or objectives).
             The shape must be (n_observations, 2).
-        larger_is_better_objectives (Optional[List[int]]):
+        larger_is_better_objectives (list[int] | None):
             The indices of the objectives that are better when the values are larger.
             If None, we consider all objectives are better when they are smaller.
         filter_duplication (bool):
@@ -111,7 +114,7 @@ def is_pareto_front2d(
 
 def is_pareto_front(
     costs: np.ndarray,
-    larger_is_better_objectives: Optional[List[int]] = None,
+    larger_is_better_objectives: list[int] | None = None,
     filter_duplication: bool = False,
 ) -> np.ndarray:
     """
@@ -124,7 +127,7 @@ def is_pareto_front(
         costs (np.ndarray):
             An array of costs (or objectives).
             The shape is (n_observations, n_objectives).
-        larger_is_better_objectives (Optional[List[int]]):
+        larger_is_better_objectives (list[int] | None):
             The indices of the objectives that are better when the values are larger.
             If None, we consider all objectives are better when they are smaller.
         filter_duplication (bool):
@@ -194,20 +197,20 @@ def _compute_rank_based_crowding_distance(ranks: np.ndarray) -> np.ndarray:
 
 
 def _tie_break_by_method(
-    nd_masks: List[List[int]],
+    nd_masks: list[list[int]],
     ranks: np.ndarray,
-    avg_ranks: Optional[np.ndarray] = None,
+    avg_ranks: np.ndarray | None = None,
 ) -> np.ndarray:
     """
     Tie-break the non-domination ranks (, but we cannot guarantee no duplications)
 
     Args:
-        nd_masks (List[List[int]]):
+        nd_masks (list[list[int]]):
             The indices of observations in each non-domination rank.
         ranks (np.ndarray):
             The ranks of each objective in each observation.
             The shape is (n_observations, n_obj).
-        avg_ranks (Optional[np.ndarray]):
+        avg_ranks (np.ndarray | None):
             The average rank + small deviation by the best rank of objectives in each observation.
             The shape is (n_observations, ).
 
@@ -261,7 +264,7 @@ def _tie_break(
 ) -> np.ndarray:
     methods = ["crowding_distance", "avg_rank"]
     ranks = scipy.stats.rankdata(costs, axis=0)
-    masks: List[List[int]] = [[] for _ in range(nd_ranks.max() + 1)]
+    masks: list[list[int]] = [[] for _ in range(nd_ranks.max() + 1)]
     for idx, nd_rank in enumerate(nd_ranks):
         masks[nd_rank].append(idx)
 
@@ -311,8 +314,8 @@ def _compute_nondominated_rank_by_sorted_costs(
 
 def nondominated_rank(
     costs: np.ndarray,
-    larger_is_better_objectives: Optional[List[int]] = None,
-    tie_break: Optional[Literal["crowding_distance", "avg_rank"]] = None,
+    larger_is_better_objectives: list[int] | None = None,
+    tie_break: Literal["crowding_distance", "avg_rank"] | None = None,
     filter_duplication: bool = True,
 ) -> np.ndarray:
     """
@@ -322,7 +325,7 @@ def nondominated_rank(
         costs (np.ndarray):
             An array of costs (or objectives).
             The shape is (n_observations, n_objectives).
-        larger_is_better_objectives (Optional[List[int]]):
+        larger_is_better_objectives (list[int] | None):
             The indices of the objectives that are better when the values are larger.
             If None, we consider all objectives are better when they are smaller.
         tie_break (bool):
