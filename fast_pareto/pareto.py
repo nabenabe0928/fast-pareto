@@ -7,7 +7,7 @@ import scipy.stats
 
 
 def _change_directions(
-    costs: np.ndarray, larger_is_better_objectives: Optional[List[int]] = None
+    costs: np.ndarray, larger_is_better_objectives: Optional[List[int]] = None,
 ) -> np.ndarray:
     """
     Determine the pareto front from a provided set of costs.
@@ -151,8 +151,8 @@ def is_pareto_front(
         We use this fact to speedup.
     """
     (n_observations, _) = costs.shape
-    total_costs = np.sum(costs, axis=-1)  # shape = (n_observations, )
     costs = _change_directions(costs, larger_is_better_objectives)
+    total_costs = np.sum(costs, axis=-1)  # shape = (n_observations, )
     on_front_indices = np.arange(n_observations)
     next_index = 0
 
