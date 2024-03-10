@@ -7,9 +7,8 @@ This library is solely for non-dominated search and to find Pareto optimal solut
 There are only two functions (**is_pareto_front** and **nondominated_rank**) in this library and we describe the usage below.
 The time complexity of finding the Pareto solutions is $O(N (\log N)^{M - 2})$ for $M > 3$ and $O(N\log N)$ for $M = 2, 3$ where $N$ is `n_observations` and $M$ is `n_objectives`. (Kung's algorithm)
 
-**NOTE**
-
-There is a package for 2d costs ([pygmo](https://esa.github.io/pygmo2/)), but this package does not support 3d or higher dimensional costs.
+> [!NOTE]
+> There is a package for 2d costs ([pygmo](https://esa.github.io/pygmo2/)), but this package does not support 3d or higher dimensional costs.
 
 
 ## Setup
@@ -46,10 +45,9 @@ If `None` is provided, we consider all objectives should be minimized.
 This function returns the true/false mask with the shape of `(n_observations, )`.
 True means the corresponding observation is on the Pareto front given a set of solutions.
 
-**NOTE**
-
-For 2d costs, we provide `is_pareto_front2d`, which is much quicker.
-We need exactly the same arguments as `is_pareto_front` and users can optionally specify `ordered=True` to further speed up.
+> [!NOTE]
+> For 2d costs, we provide `is_pareto_front2d`, which is much quicker.
+> We need exactly the same arguments as `is_pareto_front` and users can optionally specify `ordered=True` to further speed up.
 
 ## nondominated_rank
 
